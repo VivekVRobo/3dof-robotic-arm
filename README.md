@@ -1,62 +1,103 @@
 # 3-DOF Robotic Arm
 
-A compact 3-degree-of-freedom robotic-arm reference project focused on kinematics, workspace validation, trajectory generation, and servo-command output.
+[![Python CI](https://github.com/vasu4990/3dof-robotic-arm/actions/workflows/python.yml/badge.svg)](https://github.com/vasu4990/3dof-robotic-arm/actions/workflows/python.yml)
 
-> **Status:** kinematics/software implementation. Link lengths, servo zero offsets, mechanical limits, and safe speeds must be calibrated against the physical arm before motion testing.
+A compact 3-DOF robotic-arm reference stack with analytic forward/inverse kinematics, Cartesian waypoint generation, servo calibration/mapping, a CLI, unit tests, and optional Arduino servo receiver firmware.
 
-## Model
+> **Status:** kinematics/software reference is complete and testable. Link lengths, joint limits, servo offsets, mechanical zero positions, and collision limits must be measured and calibrated on the real arm.
+
+## Kinematic model
 
 The arm is modeled as:
 
-- Joint 1: base yaw
-- Joint 2: shoulder pitch
-- Joint 3: elbow pitch
+1. Base yaw `q0`
+2. Shoulder pitch `q1`
+3. Elbow pitch `q2`
 
-For target `(x, y, z)`, base yaw is computed from `atan2(y, x)`. The shoulder/elbow solution uses planar two-link inverse kinematics after subtracting the base height.
+with base height `H` and two planar links `L1` and `L2`.
 
-## Features
-
-- Forward kinematics
-- Analytic inverse kinematics
-- Reachability checks
-- Joint-limit validation
-- Linear Cartesian waypoint generation
-- CLI for testing targets before hardware motion
-
-## Quick start
-
-```bash
-python arm_kinematics.py fk 0 45 45
-python arm_kinematics.py ik 180 40 120
-python arm_kinematics.py path 140 0 100 190 60 130 --steps 20
+```mermaid
+flowchart LR
+    T[Cartesian target x,y,z] --> IK[Analytic inverse kinematics]
+    IK --> JL[Joint limit validation]
+    JL --> SM[Servo calibration mapping]
+    SM --> SP[Serial protocol]
+    SP --> MCU[Arduino servo controller]
+    IK --> FK[Forward kinematics verification]
 ```
 
-Angles are degrees; distances are millimetres by default.
+## Install
 
-## Default geometry
+```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -e .
+```
 
-The code starts with example dimensions only:
+## CLI examples
 
-- Base height: 60 mm
-- Upper arm: 120 mm
-- Forearm: 120 mm
+Solve IK for a point:
 
-Replace these with measurements from your actual mechanism.
+```bash
+python arm_kinematics.py ik 120 40 90 --l1 100 --l2 100 --base-height 30
+```
 
-## Hardware integration checklist
+Verify forward kinematics:
 
-1. Measure link lengths center-to-center.
-2. Determine servo zero angles and direction signs.
-3. Measure safe joint limits mechanically.
-4. Validate FK against known poses.
-5. Run IK targets with servos disconnected.
-6. Add slow interpolation and an emergency stop before powered testing.
+```bash
+python arm_kinematics.py fk 15 25 -45 --l1 100 --l2 100 --base-height 30
+```
 
-## Portfolio upgrades to add later
+Generate a straight Cartesian path:
 
-- CAD render / annotated dimensions
-- Servo driver firmware
-- Calibration procedure and measured error
-- Workspace visualization
-- Pick-and-place demo video
-- Repeatability measurements
+```bash
+python arm_kinematics.py path 100 0 80 140 30 100 --steps 8
+```
+
+## Tests
+
+```bash
+pytest -q
+```
+
+Tests cover FK↔IK consistency, unreachable targets, path interpolation, and servo calibration behavior.
+
+## Repository layout
+
+```text
+.
+├── src/arm3dof/
+│   ├── kinematics.py
+│   ├── trajectory.py
+│   ├── servo.py
+│   └── cli.py
+├── firmware/servo_controller/servo_controller.ino
+├── docs/
+│   ├── KINEMATICS.md
+│   ├── CALIBRATION.md
+│   └── SERIAL_PROTOCOL.md
+├── tests/
+├── arm_kinematics.py
+└── pyproject.toml
+```
+
+## Hardware integration
+
+The optional Arduino firmware accepts calibrated servo-angle commands such as:
+
+```text
+J,90,70,110
+```
+
+This means base=90°, shoulder=70°, elbow=110°. The host-side `ServoCalibration` class maps mathematical joint angles to those physical servo commands.
+
+**Do not copy reference offsets into a real arm blindly.** First establish safe mechanical zero positions and joint limits with power/current appropriate for the servos.
+
+## Limitations
+
+This reference model does not include self-collision, payload dynamics, gravity compensation, backlash, flexible links, or trajectory time-parameterization. Those are natural next steps once the physical geometry is known.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).
