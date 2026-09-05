@@ -1,10 +1,25 @@
 # 3-DOF Robotic Arm
 
-[![Python CI](https://github.com/vasu4990/3dof-robotic-arm/actions/workflows/python.yml/badge.svg)](https://github.com/vasu4990/3dof-robotic-arm/actions/workflows/python.yml)
+[![Python CI](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml/badge.svg)](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml)
 
-A compact 3-DOF robotic-arm reference stack with analytic forward/inverse kinematics, Cartesian waypoint generation, servo calibration/mapping, a CLI, unit tests, and optional Arduino servo receiver firmware.
+A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic forward/inverse kinematics, Cartesian waypoint generation, servo calibration/mapping, a CLI, unit tests, and optional Arduino servo receiver firmware.
 
-> **Status:** kinematics/software reference is complete and testable. Link lengths, joint limits, servo offsets, mechanical zero positions, and collision limits must be measured and calibrated on the real arm.
+> **Status:** kinematics/software reference is complete and testable. Link lengths, joint limits, servo offsets, mechanical zero positions, and collision limits must be measured and calibrated on the real arm before physical-motion claims are made.
+
+## Project snapshot
+
+| | |
+|---|---|
+| **Core problem** | Convert Cartesian targets into safe joint commands for a simple student-built robotic arm. |
+| **Kinematics** | Analytic FK + IK for base yaw, shoulder pitch and elbow pitch |
+| **Motion layer** | Cartesian waypoint interpolation + joint-limit validation |
+| **Hardware bridge** | Servo calibration/mapping + serial command protocol + Arduino receiver firmware |
+| **Current maturity** | Software/kinematics reference; physical geometry and calibration remain evidence-gated |
+| **Next proof milestone** | Measure the real arm, calibrate servo zero/limits, record repeatable target-reaching tests, and publish visual + numerical results |
+
+## Why this project exists
+
+A robotic-arm demo becomes much more useful when the math, calibration assumptions, hardware protocol and failure limits are visible. This repository keeps those layers explicit so the same code can move from a desktop kinematics reference toward a reproducible physical-arm implementation.
 
 ## Kinematic model
 
@@ -93,6 +108,21 @@ J,90,70,110
 This means base=90°, shoulder=70°, elbow=110°. The host-side `ServoCalibration` class maps mathematical joint angles to those physical servo commands.
 
 **Do not copy reference offsets into a real arm blindly.** First establish safe mechanical zero positions and joint limits with power/current appropriate for the servos.
+
+## Validation roadmap
+
+The next high-value evidence for this project is physical, not cosmetic:
+
+1. measure `H`, `L1`, `L2` and mechanical joint limits;
+2. calibrate servo zero positions and direction signs;
+3. test a set of reachable Cartesian targets;
+4. record commanded vs. observed endpoint positions;
+5. publish a short motion demo plus the test conditions and error table;
+6. document backlash, payload and repeatability limitations honestly.
+
+## Contributing
+
+Contributions are welcome for kinematics, calibration, trajectory generation, tests, documentation, visualization and hardware integration. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Limitations
 
