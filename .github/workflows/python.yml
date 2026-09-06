@@ -15,4 +15,6 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -e . pytest
       - run: pytest -q
-      - run: python -m compileall -q src arm_kinematics.py
+      - run: python -m compileall -q src tools arm_kinematics.py
+      - name: Validate physical experiment harness
+        run: python tools/record_physical_experiment.py --dry-run --output-dir artifacts/ci
