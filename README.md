@@ -14,6 +14,7 @@ A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic fo
 | **Kinematics** | Analytic FK + IK for base yaw, shoulder pitch and elbow pitch |
 | **Motion layer** | Cartesian waypoint interpolation + joint-limit validation |
 | **Hardware bridge** | Servo calibration/mapping + serial command protocol + Arduino receiver firmware |
+| **Validation tooling** | Interactive physical endpoint experiment harness with CSV + Markdown error reports |
 | **Current maturity** | Software/kinematics reference; physical geometry and calibration remain evidence-gated |
 | **Next proof milestone** | Measure the real arm, calibrate servo zero/limits, record repeatable target-reaching tests, and publish visual + numerical results |
 
@@ -78,6 +79,33 @@ pytest -q
 
 Tests cover FK↔IK consistency, unreachable targets, path interpolation, and servo calibration behavior.
 
+## Physical validation harness
+
+The repository now includes an experiment tool for converting real endpoint measurements into reproducible error metrics:
+
+```bash
+python tools/record_physical_experiment.py
+```
+
+It prompts for measured `H`, `L1`, and `L2`, prepares 12 guaranteed-reachable kinematic targets, displays the corresponding mathematical joint angles, accepts observed endpoint coordinates, and generates:
+
+```text
+artifacts/measured_positions.csv
+artifacts/physical_validation_report.md
+```
+
+The report calculates mean, median, RMS and maximum Euclidean endpoint error plus per-axis RMSE. A 10–15+ target dataset is recommended before publishing a portfolio-level hardware result.
+
+To test the harness itself without creating fake hardware evidence:
+
+```bash
+python tools/record_physical_experiment.py --dry-run
+```
+
+Dry-run output is kept under `artifacts/dry_run/` and is explicitly marked as simulated. See [`docs/PHYSICAL_VALIDATION.md`](docs/PHYSICAL_VALIDATION.md) for the measurement protocol, coordinate-frame definition and evidence checklist.
+
+> **No physical error numbers are claimed in this README yet.** The generated physical table should only be promoted here after real measurements, calibration notes and setup evidence exist.
+
 ## Repository layout
 
 ```text
@@ -88,10 +116,13 @@ Tests cover FK↔IK consistency, unreachable targets, path interpolation, and se
 │   ├── servo.py
 │   └── cli.py
 ├── firmware/servo_controller/servo_controller.ino
+├── tools/
+│   └── record_physical_experiment.py
 ├── docs/
 │   ├── KINEMATICS.md
 │   ├── CALIBRATION.md
-│   └── SERIAL_PROTOCOL.md
+│   ├── SERIAL_PROTOCOL.md
+│   └── PHYSICAL_VALIDATION.md
 ├── tests/
 ├── arm_kinematics.py
 └── pyproject.toml
@@ -117,7 +148,7 @@ The next high-value evidence for this project is physical, not cosmetic:
 2. calibrate servo zero positions and direction signs;
 3. test a set of reachable Cartesian targets;
 4. record commanded vs. observed endpoint positions;
-5. publish a short motion demo plus the test conditions and error table;
+5. publish the generated error report and a short motion/setup demo;
 6. document backlash, payload and repeatability limitations honestly.
 
 ## Contributing
