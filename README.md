@@ -2,7 +2,7 @@
 
 [![Python CI](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml/badge.svg)](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml)
 
-A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic forward/inverse kinematics, Cartesian waypoint generation, servo calibration/mapping, a CLI, unit tests, and optional Arduino servo receiver firmware.
+A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic forward/inverse kinematics, Cartesian waypoint generation, servo calibration/mapping, a CLI, unit tests, numerical model validation, and optional Arduino servo receiver firmware.
 
 > **Status:** kinematics/software reference is complete and testable. Link lengths, joint limits, servo offsets, mechanical zero positions, and collision limits must be measured and calibrated on the real arm before physical-motion claims are made.
 
@@ -14,7 +14,8 @@ A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic fo
 | **Kinematics** | Analytic FK + IK for base yaw, shoulder pitch and elbow pitch |
 | **Motion layer** | Cartesian waypoint interpolation + joint-limit validation |
 | **Hardware bridge** | Servo calibration/mapping + serial command protocol + Arduino receiver firmware |
-| **Validation tooling** | Interactive physical endpoint experiment harness with CSV + Markdown error reports |
+| **Software evidence** | Deterministic FK→IK→FK grid validation + ideal angle-to-endpoint sensitivity analysis |
+| **Physical validation tooling** | Interactive endpoint experiment harness with CSV + Markdown error reports |
 | **Current maturity** | Software/kinematics reference; physical geometry and calibration remain evidence-gated |
 | **Next proof milestone** | Measure the real arm, calibrate servo zero/limits, record repeatable target-reaching tests, and publish visual + numerical results |
 
@@ -77,11 +78,51 @@ python arm_kinematics.py path 100 0 80 140 30 100 --steps 8
 pytest -q
 ```
 
-Tests cover FK↔IK consistency, unreachable targets, path interpolation, and servo calibration behavior.
+Tests cover FK↔IK consistency, unreachable targets, path interpolation, servo calibration behavior, deterministic model-grid validation, and endpoint sensitivity calculations.
+
+## Numerical validation without pretending it is hardware evidence
+
+When the physical arm is unavailable, the repository can still produce reproducible **software-only engineering evidence**:
+
+```bash
+python tools/numerical_validation.py
+```
+
+The default run evaluates a deterministic `17 × 17 × 17` joint-space grid (4,913 reachable poses) through:
+
+```text
+joint pose → FK → Cartesian target → IK → FK → reconstruction error
+```
+
+It also samples the ideal rigid-link model under small independent joint-angle perturbations and reports the resulting endpoint displacement. This is useful for understanding how angular resolution can geometrically amplify at the tool point.
+
+Output:
+
+```text
+artifacts/numerical_validation.json
+```
+
+The artifact carries explicit provenance fields:
+
+```text
+evidence_type: software_numerical_validation
+hardware_evidence: false
+```
+
+These results validate the analytic equations and ideal geometric sensitivity only. They **must not** be presented as MG996R accuracy, backlash, repeatability, payload performance, or measured endpoint error.
+
+Example custom run:
+
+```bash
+python tools/numerical_validation.py \
+  --l1 100 --l2 100 --base-height 30 \
+  --grid 21 \
+  --angle-perturbation-deg 1.0
+```
 
 ## Physical validation harness
 
-The repository now includes an experiment tool for converting real endpoint measurements into reproducible error metrics:
+The repository includes an experiment tool for converting real endpoint measurements into reproducible error metrics:
 
 ```bash
 python tools/record_physical_experiment.py
@@ -114,15 +155,19 @@ Dry-run output is kept under `artifacts/dry_run/` and is explicitly marked as si
 │   ├── kinematics.py
 │   ├── trajectory.py
 │   ├── servo.py
+│   ├── validation.py
 │   └── cli.py
 ├── firmware/servo_controller/servo_controller.ino
 ├── tools/
+│   ├── numerical_validation.py
 │   └── record_physical_experiment.py
 ├── docs/
 │   ├── KINEMATICS.md
 │   ├── CALIBRATION.md
 │   ├── SERIAL_PROTOCOL.md
 │   └── PHYSICAL_VALIDATION.md
+├── experiments/
+│   └── PHYSICAL_IK_RUN_TEMPLATE.md
 ├── tests/
 ├── arm_kinematics.py
 └── pyproject.toml
@@ -142,7 +187,14 @@ This means base=90°, shoulder=70°, elbow=110°. The host-side `ServoCalibratio
 
 ## Validation roadmap
 
-The next high-value evidence for this project is physical, not cosmetic:
+### Available now
+
+1. run deterministic FK/IK numerical validation;
+2. publish software-only model-consistency artifacts when useful;
+3. analyze ideal endpoint sensitivity to joint-angle perturbation;
+4. keep all generated results labeled as numerical/simulation evidence.
+
+### When hardware becomes available
 
 1. measure `H`, `L1`, `L2` and mechanical joint limits;
 2. calibrate servo zero positions and direction signs;
@@ -157,7 +209,7 @@ Contributions are welcome for kinematics, calibration, trajectory generation, te
 
 ## Limitations
 
-This reference model does not include self-collision, payload dynamics, gravity compensation, backlash, flexible links, or trajectory time-parameterization. Those are natural next steps once the physical geometry is known.
+This reference model does not include self-collision, payload dynamics, gravity compensation, backlash, flexible links, or trajectory time-parameterization. Numerical angle-sensitivity results assume ideal rigid geometry and are not a substitute for measured servo/mechanical behavior.
 
 ## License
 
