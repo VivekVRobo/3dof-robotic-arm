@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "evidence_type": "physical-measurement",
+  "dry_run": false,
+  "arm_revision": "replace-with-physical-arm-revision",
+  "measurement_unit": "mm",
+  "measurement_method": "replace-with-coordinate measurement procedure",
+  "measurement_instrument": "replace-with-ruler/caliper/camera-grid/motion-capture details",
+  "measurement_uncertainty": "replace-with estimated measurement uncertainty and basis",
+  "power_supply": "replace-with voltage/current-limit/source details",
+  "servo_calibration_reference": "replace-with calibration notes/file/photo reference",
+  "coordinate_frame_reference": "replace-with photo/sketch/file showing the experiment frame",
+  "demo_media_reference": "replace-with stable photo/video reference from the same setup",
+  "payload": "replace-with endpoint payload/tooling during test",
+  "notes": "Document backlash, fixture compliance, skipped targets, failures, and anything that could bias the result."
+}
