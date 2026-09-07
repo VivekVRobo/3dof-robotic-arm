@@ -59,8 +59,8 @@ python tools/record_physical_experiment.py
 5. For each generated reachable target, the tool prints the mathematical IK angles.
 6. Move the robot using the project's **calibrated** control path. Raw mathematical angles are not automatically safe servo commands.
 7. Measure the endpoint and enter `x_obs,y_obs,z_obs`.
-8. Record at least 10–15 targets spread across the workspace. Use `skip` for a target you cannot measure reliably.
-9. Repeat a subset of targets 3–5 times if you want a separate repeatability/backlash study.
+8. Record at least **12 unique targets** spread across the workspace.
+9. Repeat at least **3 of those targets 3 or more times** so repeatability/backlash is visible instead of inferred from one pass.
 10. Save a short video or photos showing the setup, coordinate frame and measurement method.
 
 The physical run writes:
@@ -70,6 +70,41 @@ artifacts/measured_positions.csv
 artifacts/physical_validation_report.md
 ```
 
+## Evidence provenance manifest
+
+Copy the template:
+
+```text
+docs/physical_experiment_manifest.example.json
+```
+
+to:
+
+```text
+artifacts/physical_experiment_manifest.json
+```
+
+and replace every placeholder with the real experiment metadata: arm revision, units, measurement method/instrument/uncertainty, power supply, servo-calibration reference, coordinate-frame reference and media reference.
+
+## Portfolio publication gate
+
+After the real measurement CSV and provenance manifest exist, run:
+
+```bash
+python tools/validate_physical_evidence.py
+```
+
+The gate requires:
+
+- every CSV row to be labelled `physical-measurement`;
+- at least 12 unique Cartesian targets;
+- at least 3 targets with 3+ trials each;
+- recomputed Euclidean errors to agree with the stored values;
+- non-empty experiment provenance fields;
+- `dry_run=false` explicitly in the manifest.
+
+A passing gate means the evidence bundle has a **publishable structure**. It does not independently prove that manually entered coordinates or media are authentic; a reviewer must still inspect the physical setup and methodology.
+
 ## Dry-run verification
 
 To verify calculations and report generation without creating fake evidence:
@@ -78,7 +113,7 @@ To verify calculations and report generation without creating fake evidence:
 python tools/record_physical_experiment.py --dry-run
 ```
 
-Dry-run artifacts are written under `artifacts/dry_run/` and are explicitly labelled **SIMULATED DRY RUN — NOT HARDWARE EVIDENCE**.
+Dry-run artifacts are written under `artifacts/dry_run/` and are explicitly labelled **SIMULATED DRY RUN — NOT HARDWARE EVIDENCE**. They must never pass the physical publication gate.
 
 ## Custom target set
 
@@ -88,7 +123,7 @@ Pass a CSV containing `x,y,z` columns:
 python tools/record_physical_experiment.py --targets-csv experiments/targets.csv
 ```
 
-Use only targets that are safe for the calibrated physical joint limits and workspace.
+Repeated rows in a custom target file are useful for the repeatability subset. Use only targets that are safe for the calibrated physical joint limits and workspace.
 
 ## Portfolio evidence checklist
 
@@ -97,8 +132,11 @@ A physical-validation claim is ready to publish only when all of the following e
 - measured `H`, `L1`, `L2`;
 - documented coordinate frame;
 - calibrated servo zero/direction/limits;
-- at least 10–15 measured endpoint samples;
+- at least 12 unique measured targets;
+- at least 3 repeated targets with 3+ trials each;
 - generated CSV and report;
+- completed physical experiment manifest;
+- passing `validate_physical_evidence.py` summary;
 - photo/video evidence of the real setup;
 - notes on measurement uncertainty, backlash, payload and known failure modes.
 
