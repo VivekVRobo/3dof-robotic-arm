@@ -9,6 +9,7 @@ from pathlib import Path
 
 from arm3dof.kinematics import ArmGeometry
 from arm3dof.validation import endpoint_angle_sensitivity, validate_fk_ik_grid
+from arm3dof.workspace import characterize_workspace
 
 
 def main() -> int:
@@ -16,7 +17,7 @@ def main() -> int:
     parser.add_argument("--l1", type=float, default=100.0)
     parser.add_argument("--l2", type=float, default=100.0)
     parser.add_argument("--base-height", type=float, default=30.0)
-    parser.add_argument("--grid", type=int, default=17, help="points per joint for FK/IK grid")
+    parser.add_argument("--grid", type=int, default=17, help="points per joint for FK/IK and workspace grids")
     parser.add_argument("--sensitivity-grid", type=int, default=11)
     parser.add_argument("--angle-perturbation-deg", type=float, default=1.0)
     parser.add_argument("--output", type=Path, default=Path("artifacts/numerical_validation.json"))
@@ -29,17 +30,25 @@ def main() -> int:
         perturbation_deg=args.angle_perturbation_deg,
         points_per_joint=args.sensitivity_grid,
     )
+    workspace, jacobian = characterize_workspace(geometry, points_per_joint=args.grid)
 
     report = {
         "evidence_type": "software_numerical_validation",
         "hardware_evidence": False,
         "claim_boundary": (
-            "Results validate the ideal analytic rigid-link model and geometric angle sensitivity only; "
-            "they are not measured servo or physical endpoint accuracy."
+            "Results validate the ideal analytic rigid-link model, sampled workspace, positional Jacobian, "
+            "and geometric angle sensitivity only; they are not measured servo or physical endpoint accuracy."
         ),
         "geometry": {"l1": geometry.l1, "l2": geometry.l2, "base_height": geometry.base_height},
+        "sampled_joint_ranges_deg": {
+            "base": [-90.0, 90.0],
+            "shoulder": [-30.0, 120.0],
+            "elbow": [-135.0, -5.0],
+        },
         "fk_ik_consistency": asdict(consistency),
         "angle_sensitivity": asdict(sensitivity),
+        "sampled_workspace": asdict(workspace),
+        "position_jacobian": asdict(jacobian),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
