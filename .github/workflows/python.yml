@@ -16,5 +16,33 @@ jobs:
       - run: pip install -e . pytest
       - run: pytest -q
       - run: python -m compileall -q src tools arm_kinematics.py
+      - name: Generate deterministic numerical evidence
+        run: |
+          python tools/numerical_validation.py \
+            --grid 17 \
+            --sensitivity-grid 11 \
+            --angle-perturbation-deg 1.0 \
+            --output artifacts/ci/numerical-validation.json
+      - name: Validate numerical evidence claim boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('artifacts/ci/numerical-validation.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          assert data['evidence_type'] == 'software_numerical_validation'
+          assert data['hardware_evidence'] is False
+          assert data['fk_ik_consistency']['ik_failures'] == 0
+          assert data['fk_ik_consistency']['samples'] == 4913
+          assert data['sampled_workspace']['samples'] == 4913
+          assert data['position_jacobian']['samples'] == 4913
+          print('numerical evidence contract: PASS')
+          PY
       - name: Validate physical experiment harness
-        run: python tools/record_physical_experiment.py --dry-run --output-dir artifacts/ci
+        run: python tools/record_physical_experiment.py --dry-run --output-dir artifacts/ci/physical-harness-dry-run
+      - name: Upload software evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm-software-evidence
+          path: artifacts/ci/
+          if-no-files-found: error
