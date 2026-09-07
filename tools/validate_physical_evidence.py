@@ -56,6 +56,7 @@ def validate_bundle(
     min_unique_targets: int = 12,
     min_repeated_targets: int = 3,
     min_trials_per_repeated_target: int = 3,
+    error_tolerance: float = 0.02,
 ) -> dict[str, object]:
     errors: list[str] = []
 
@@ -79,18 +80,26 @@ def validate_bundle(
     for number, row in enumerate(rows, start=2):
         try:
             key = _target_key(row)
+            target = tuple(float(row[name]) for name in ("target_x", "target_y", "target_z"))
+            observed = tuple(float(row[name]) for name in ("observed_x", "observed_y", "observed_z"))
             numeric_error = float(row["euclidean_error"])
-            if not math.isfinite(numeric_error) or numeric_error < 0:
+            if not all(math.isfinite(value) for value in (*target, *observed, numeric_error)):
                 raise ValueError
-            for column in ("observed_x", "observed_y", "observed_z"):
-                value = float(row[column])
-                if not math.isfinite(value):
-                    raise ValueError
+            if numeric_error < 0:
+                raise ValueError
+            calculated_error = math.sqrt(
+                sum((observed[i] - target[i]) ** 2 for i in range(3))
+            )
+            if abs(calculated_error - numeric_error) > error_tolerance:
+                errors.append(
+                    f"CSV row {number} euclidean_error={numeric_error:.4f} does not match "
+                    f"recomputed value {calculated_error:.4f} within {error_tolerance}"
+                )
         except (TypeError, ValueError):
             errors.append(f"CSV row {number} contains invalid/non-finite numeric evidence")
             continue
         target_counts[key] += 1
-        numeric_errors.append(numeric_error)
+        numeric_errors.append(calculated_error)
 
     unique_targets = len(target_counts)
     repeated_targets = sum(
