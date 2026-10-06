@@ -102,22 +102,24 @@ Install:
 pip install -e .
 ```
 
+The geometry options are global CLI options, so place them **before** the `ik`, `fk`, or `path` subcommand.
+
 Solve inverse kinematics:
 
 ```bash
-python arm_kinematics.py ik 120 40 90 --l1 100 --l2 100 --base-height 30
+python arm_kinematics.py --l1 100 --l2 100 --base-height 30 ik 120 40 90
 ```
 
 Verify forward kinematics:
 
 ```bash
-python arm_kinematics.py fk 15 25 -45 --l1 100 --l2 100 --base-height 30
+python arm_kinematics.py --l1 100 --l2 100 --base-height 30 fk 15 25 -45
 ```
 
 Generate a straight Cartesian path:
 
 ```bash
-python arm_kinematics.py path 100 0 80 140 30 100 --steps 8
+python arm_kinematics.py --l1 100 --l2 100 --base-height 30 path 100 0 80 140 30 100 --steps 8
 ```
 
 Run tests:
