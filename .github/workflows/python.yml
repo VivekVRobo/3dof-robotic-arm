@@ -18,9 +18,9 @@ jobs:
       - run: python -m compileall -q src tools arm_kinematics.py
       - name: Verify README CLI examples
         run: |
-          python arm_kinematics.py ik 120 40 90 --l1 100 --l2 100 --base-height 30
-          python arm_kinematics.py fk 15 25 -45 --l1 100 --l2 100 --base-height 30
-          python arm_kinematics.py path 100 0 80 140 30 100 --steps 8
+          python arm_kinematics.py --l1 100 --l2 100 --base-height 30 ik 120 40 90
+          python arm_kinematics.py --l1 100 --l2 100 --base-height 30 fk 15 25 -45
+          python arm_kinematics.py --l1 100 --l2 100 --base-height 30 path 100 0 80 140 30 100 --steps 8
       - name: Generate deterministic numerical evidence
         run: |
           python tools/numerical_validation.py \
