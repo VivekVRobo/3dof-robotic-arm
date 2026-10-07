@@ -1,56 +1,65 @@
-# 3-DOF Robotic Arm
+<p align="center">
+  <img src="./assets/3dof-hero.svg" alt="3DOF Robotic Arm | Kinematics, Planning and Physical Validation" width="100%" />
+</p>
 
-[![Python CI](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml/badge.svg)](https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml)
+<p align="center">
+  <a href="https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml"><img src="https://github.com/VivekVRobo/3dof-robotic-arm/actions/workflows/python.yml/badge.svg" alt="Python CI"></a>
+  <img src="https://img.shields.io/badge/Python-425866?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/FK_%2F_IK-Analytic-425866?style=flat-square" alt="Analytic FK and IK">
+  <img src="https://img.shields.io/badge/Cartesian_Planning-425866?style=flat-square" alt="Cartesian planning">
+  <img src="https://img.shields.io/badge/Physical_Accuracy-Pending-C9965B?style=flat-square" alt="Physical accuracy pending">
+</p>
 
-A compact robotics stack for a desk-scale **3-DOF robotic arm** with analytic forward/inverse kinematics, Cartesian waypoint planning, servo calibration/mapping, serial control, numerical validation, and a physical measurement harness.
+<p align="center">
+  <strong>A desk scale 3DOF arm stack that keeps analytic kinematics, calibration, command transport, numerical validation, and physical measurement as separate engineering stages.</strong>
+</p>
 
-> **Evidence boundary:** the kinematics/software stack is testable and numerically validated. Real link geometry, servo zero/limits, backlash, repeatability and endpoint accuracy remain physical-measurement gates and are not claimed here yet.
+> [!IMPORTANT]
+> **Evidence boundary:** the kinematics and software stack are testable and numerically validated. Real link geometry, servo zero points, backlash, repeatability, endpoint accuracy, payload behavior, and physical safety remain measurement gates and are not claimed yet.
 
-## See the control path in 30 seconds
+<p align="center">
+  <a href="docs/KINEMATICS.md"><strong>Kinematics</strong></a> ·
+  <a href="docs/CALIBRATION.md"><strong>Calibration</strong></a> ·
+  <a href="docs/NUMERICAL_EVIDENCE.md"><strong>Numerical Evidence</strong></a> ·
+  <a href="docs/PHYSICAL_VALIDATION.md"><strong>Physical Validation</strong></a> ·
+  <a href="docs/RELEASE_READINESS.md"><strong>Release Gate</strong></a>
+</p>
+
+---
+
+## Current Evidence State
+
+| Surface | Evidence | Status |
+| --- | --- | :---: |
+| **Forward kinematics** | Analytic implementation and tests | ✅ Verified |
+| **Inverse kinematics** | Analytic solver and tests | ✅ Verified |
+| **FK → IK → FK consistency** | Deterministic joint grid campaign | ✅ Software evidence |
+| **Cartesian waypoints** | Interpolation and trajectory tests | ✅ Verified |
+| **Joint limit handling** | Validation layer and tests | ✅ Verified |
+| **Servo mapping** | Calibration and mapping implementation | ✅ Implemented |
+| **Serial command path** | Protocol and Arduino receiver reference | ✅ Implemented |
+| **Physical measurement harness** | CSV and report workflow | ✅ Implemented |
+| **Mechanical calibration** | Real arm measurement | ◐ Pending |
+| **Endpoint accuracy** | Repeated physical measurements | ◐ Pending |
+| **Repeatability / backlash** | Physical experiment evidence | ◐ Pending |
+
+---
+
+## Control Path
 
 ```mermaid
 flowchart LR
-    T[Cartesian target x,y,z] --> IK[Analytic IK]
-    IK --> LIMITS[Joint-limit checks]
-    LIMITS --> MAP[Servo calibration mapping]
+    T[Cartesian target x y z] --> IK[Analytic IK]
+    IK --> LIMITS[Joint limits]
+    LIMITS --> MAP[Servo calibration]
     MAP --> SERIAL[Serial protocol]
-    SERIAL --> MCU[Arduino servo receiver]
-    IK --> FK[Forward-kinematics verification]
-    FK --> ERR[Endpoint error / validation]
+    SERIAL --> MCU[Arduino receiver]
+
+    IK --> FK[Forward kinematics]
+    FK --> ERR[Endpoint validation]
 ```
 
-The project is intentionally split into **math → calibration → command transport → measurement** so a clean software model is never confused with physical robot performance.
-
-## What you can inspect immediately
-
-| Surface | Purpose |
-| --- | --- |
-| [`arm_kinematics.py`](arm_kinematics.py) | FK, IK and Cartesian path generation |
-| [`tools/numerical_validation.py`](tools/numerical_validation.py) | Deterministic model-grid validation |
-| [`tools/record_physical_experiment.py`](tools/record_physical_experiment.py) | Real endpoint measurement workflow |
-| [`docs/KINEMATICS.md`](docs/KINEMATICS.md) | Kinematic model and assumptions |
-| [`docs/CALIBRATION.md`](docs/CALIBRATION.md) | Servo/mechanical calibration process |
-| [`docs/PHYSICAL_VALIDATION.md`](docs/PHYSICAL_VALIDATION.md) | Physical evidence protocol |
-| [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md) | First tagged-release gate |
-
-## Project snapshot
-
-| Area | Current state |
-| --- | --- |
-| Kinematics | Analytic FK + IK for base yaw, shoulder pitch, elbow pitch |
-| Planning | Cartesian waypoint interpolation |
-| Safety layer | Joint-limit validation before command generation |
-| Hardware bridge | Servo calibration/mapping + serial protocol + Arduino receiver |
-| Software evidence | Deterministic FK → IK → FK grid validation |
-| Physical evidence tooling | Endpoint experiment harness + CSV/Markdown reports |
-| Current maturity | Software/kinematics reference |
-| Physical endpoint accuracy | Not yet claimed |
-
-## Why this project exists
-
-A robotic-arm demo becomes more useful when the math, calibration assumptions, hardware protocol and failure limits are visible.
-
-This repository is designed so the same code can progress from:
+The repository intentionally separates:
 
 ```text
 analytic model
@@ -66,33 +75,105 @@ measured endpoint experiments
 repeatability / backlash evidence
 ```
 
-without skipping evidence stages.
+A clean software model is not treated as proof of physical accuracy.
 
-## Kinematic model
+---
+
+## Numerical Evidence
+
+Run:
+
+```bash
+python tools/numerical_validation.py
+```
+
+The default deterministic campaign evaluates a **17 × 17 × 17 joint grid**, giving **4,913 sampled poses** through:
+
+```text
+joint pose → FK → Cartesian target → IK → FK → reconstruction error
+```
+
+The evidence package also characterizes:
+
+* angle sensitivity
+* sampled workspace envelope
+* position Jacobian conditioning
+* near singular configurations
+
+The generated artifact is explicitly software only:
+
+```text
+evidence_type: software_numerical_validation
+hardware_evidence: false
+```
+
+This can validate equations and ideal rigid link behavior. It does not prove servo precision, printed part stiffness, backlash, calibration accuracy, payload capacity, or physical endpoint repeatability.
+
+[**Read numerical evidence methodology →**](docs/NUMERICAL_EVIDENCE.md)
+
+---
+
+## Physical Validation Path
+
+The measurement harness is:
+
+```bash
+python tools/record_physical_experiment.py
+```
+
+It records measured geometry, prepares reachable targets, accepts observed endpoint coordinates, and produces:
+
+```text
+artifacts/measured_positions.csv
+artifacts/physical_validation_report.md
+```
+
+The report can calculate mean, median, RMS, maximum Euclidean endpoint error, and per axis RMSE once real measurements are entered.
+
+Dry run mode exists only to test the workflow and must not be presented as physical evidence.
+
+[**Read the physical validation protocol →**](docs/PHYSICAL_VALIDATION.md)
+
+---
+
+## Kinematic Model
 
 The arm is modeled with:
 
-1. base yaw `q0`
-2. shoulder pitch `q1`
-3. elbow pitch `q2`
-4. base height `H`
-5. planar links `L1` and `L2`
+* base yaw `q0`
+* shoulder pitch `q1`
+* elbow pitch `q2`
+* base height `H`
+* link lengths `L1` and `L2`
 
-## Quick start
+The software provides:
 
-Create an environment:
+* analytic forward kinematics
+* analytic inverse kinematics
+* reachable workspace checks
+* joint limit validation
+* Cartesian waypoint generation
+* servo calibration and mapping
+
+---
+
+## Quick Start
+
+Create and activate an environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Activate it:
+Windows:
+
+```powershell
+.venv\Scripts\activate
+```
+
+Linux / macOS:
 
 ```bash
-# Windows
-.venv\Scripts\activate
-
-# Linux/macOS
 source .venv/bin/activate
 ```
 
@@ -101,8 +182,6 @@ Install:
 ```bash
 pip install -e .
 ```
-
-The geometry options are global CLI options, so place them **before** the `ik`, `fk`, or `path` subcommand.
 
 Solve inverse kinematics:
 
@@ -116,7 +195,7 @@ Verify forward kinematics:
 python arm_kinematics.py --l1 100 --l2 100 --base-height 30 fk 15 25 -45
 ```
 
-Generate a straight Cartesian path:
+Generate a Cartesian path:
 
 ```bash
 python arm_kinematics.py --l1 100 --l2 100 --base-height 30 path 100 0 80 140 30 100 --steps 8
@@ -128,102 +207,59 @@ Run tests:
 pytest -q
 ```
 
-## Numerical evidence
+---
 
-Run the deterministic model check:
+## Inspect the Implementation
 
-```bash
-python tools/numerical_validation.py
-```
-
-The default campaign evaluates a `17 × 17 × 17` joint-space grid, giving **4,913 reachable poses**, through:
-
-```text
-joint pose → FK → Cartesian target → IK → FK → reconstruction error
-```
-
-It also evaluates ideal rigid-link sensitivity under small independent joint-angle perturbations.
-
-The artifact is written to:
-
-```text
-artifacts/numerical_validation.json
-```
-
-and explicitly carries:
-
-```text
-evidence_type: software_numerical_validation
-hardware_evidence: false
-```
-
-That validates the equations and ideal geometric sensitivity. It does **not** prove MG996R accuracy, backlash, payload capacity or real endpoint repeatability.
-
-## Physical validation path
-
-The physical experiment harness is:
-
-```bash
-python tools/record_physical_experiment.py
-```
-
-It records measured geometry, prepares reachable targets, accepts observed endpoint coordinates and produces:
-
-```text
-artifacts/measured_positions.csv
-artifacts/physical_validation_report.md
-```
-
-The report calculates mean, median, RMS and maximum Euclidean endpoint error plus per-axis RMSE.
-
-Dry-run mode exists only to validate the harness:
-
-```bash
-python tools/record_physical_experiment.py --dry-run
-```
-
-Dry-run artifacts are explicitly marked simulated and must not be promoted as physical evidence.
-
-## Evidence maturity
-
-| Claim | Status |
+| Surface | Purpose |
 | --- | --- |
-| FK/IK implementation | Implemented + tested |
-| Numerical FK→IK→FK consistency | Reproducible software evidence |
-| Cartesian waypoint generation | Implemented + tested |
-| Servo mapping / serial protocol | Implemented |
-| Real arm geometry calibration | Pending |
-| Real endpoint accuracy | Pending |
-| Repeatability/backlash | Pending |
-| Payload / physical safety envelope | Not yet claimed |
+| [`src/arm3dof/kinematics.py`](src/arm3dof/kinematics.py) | FK and IK |
+| [`src/arm3dof/trajectory.py`](src/arm3dof/trajectory.py) | Cartesian planning |
+| [`src/arm3dof/servo.py`](src/arm3dof/servo.py) | Servo mapping and calibration |
+| [`src/arm3dof/workspace.py`](src/arm3dof/workspace.py) | Workspace validation |
+| [`tools/numerical_validation.py`](tools/numerical_validation.py) | Deterministic numerical campaign |
+| [`tools/record_physical_experiment.py`](tools/record_physical_experiment.py) | Measurement workflow |
+| [`tools/validate_physical_evidence.py`](tools/validate_physical_evidence.py) | Physical evidence validation |
 
-## First release
+---
 
-A conservative **v0.1.0 software-reference release** is appropriate once the exact release commit passes CI and the checklist in [`docs/RELEASE_READINESS.md`](docs/RELEASE_READINESS.md).
+## Current Proof Priorities
 
-That release may describe the analytic kinematics, CLI, tests, calibration tooling and numerical evidence. It must not include physical-performance claims until the real measurement bundle passes the physical evidence gate.
+1. measure real link geometry and mechanical zero positions
+2. calibrate servo mapping against real joint angles
+3. publish repeated endpoint accuracy measurements
+4. quantify repeatability and backlash
+5. document payload and physical safety limits only after measurement
+
+---
+
+## Release Status
+
+The first tag should be a conservative **v0.1.0 software reference release**.
+
+It may describe analytic kinematics, planning, calibration tooling, serial control, tests, and numerical evidence.
+
+It must not imply physical endpoint accuracy, repeatability, payload capability, or hardware safety evidence until those measurements exist.
+
+[**Release readiness →**](docs/RELEASE_READINESS.md)
+
+---
 
 ## Documentation
 
-- [`docs/KINEMATICS.md`](docs/KINEMATICS.md)
-- [`docs/CALIBRATION.md`](docs/CALIBRATION.md)
-- [`docs/SERIAL_PROTOCOL.md`](docs/SERIAL_PROTOCOL.md)
-- [`docs/NUMERICAL_EVIDENCE.md`](docs/NUMERICAL_EVIDENCE.md)
-- [`docs/PHYSICAL_VALIDATION.md`](docs/PHYSICAL_VALIDATION.md)
+* [Kinematics](docs/KINEMATICS.md)
+* [Calibration](docs/CALIBRATION.md)
+* [Serial Protocol](docs/SERIAL_PROTOCOL.md)
+* [Numerical Evidence](docs/NUMERICAL_EVIDENCE.md)
+* [Physical Validation](docs/PHYSICAL_VALIDATION.md)
+
+---
 
 ## Contributing
 
-Useful contribution areas include:
+Useful work includes kinematic edge cases, calibration tooling, Cartesian planning, serial robustness, visualization, test coverage, and reproducible physical measurement.
 
-- kinematic edge cases;
-- calibration tooling;
-- Cartesian planning;
-- test coverage;
-- serial protocol robustness;
-- physical measurement workflow;
-- visualization and experiment reproducibility.
-
-If the project is useful to your robotics work, **star the repository or follow `VivekVRobo`** to track the physical-validation milestone.
+---
 
 ## License
 
