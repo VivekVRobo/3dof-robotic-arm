@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="t d">
+<title id="t">3DOF Robotic Arm — Kinematics, Planning and Physical Validation</title>
+<desc id="d">A desk scale 3DOF robotic arm engineering project with analytic forward and inverse kinematics, Cartesian planning, servo mapping, numerical validation, and a physical measurement path.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F4F0E8"/><stop offset="1" stop-color="#E5EDF1"/></linearGradient>
+<pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#6F90A8" stroke-opacity=".09"/></pattern>
+<filter id="s"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#132436" flood-opacity=".10"/></filter>
+</defs>
+<rect width="1200" height="430" rx="28" fill="url(#bg)"/><rect width="1200" height="430" rx="28" fill="url(#grid)"/>
+<g font-family="Inter,Segoe UI,Arial,sans-serif">
+<text x="58" y="62" font-size="15" font-weight="700" letter-spacing="3.2" fill="#647985">KINEMATICS · PLANNING · CALIBRATION · MEASUREMENT</text>
+<text x="58" y="119" font-size="48" font-weight="800" fill="#132436">3DOF Robotic Arm</text>
+<text x="58" y="155" font-size="22" font-weight="650" fill="#395260">From analytic model to measured physical endpoint</text>
+<text x="58" y="210" font-size="18.5" fill="#425866">FK · IK · Cartesian waypoints · servo mapping · serial control</text>
+<text x="58" y="238" font-size="18.5" fill="#425866">with explicit separation between software proof and hardware proof.</text>
+<g transform="translate(58 286)">
+<rect width="150" height="42" rx="12" fill="#fff" fill-opacity=".66" stroke="#B3C3CA"/><text x="75" y="27" text-anchor="middle" font-size="13.5" font-weight="700" fill="#284252">ANALYTIC FK / IK</text>
+<rect x="164" width="150" height="42" rx="12" fill="#fff" fill-opacity=".66" stroke="#B3C3CA"/><text x="239" y="27" text-anchor="middle" font-size="13.5" font-weight="700" fill="#284252">4913 POSE GRID</text>
+<rect x="328" width="180" height="42" rx="12" fill="#fff" fill-opacity=".66" stroke="#B3C3CA"/><text x="418" y="27" text-anchor="middle" font-size="13.5" font-weight="700" fill="#284252">PHYSICAL HARNESS</text>
+</g>
+<g transform="translate(58 354)"><rect width="510" height="48" rx="14" fill="#263D49"/><circle cx="25" cy="24" r="7" fill="#C9965B"/><text x="45" y="30" font-size="13.5" font-weight="700" fill="#F4F0E8">SOFTWARE EVIDENCE VERIFIED · PHYSICAL ACCURACY PENDING</text></g>
+<g transform="translate(650 42)" filter="url(#s)">
+<rect width="492" height="346" rx="22" fill="#fff" fill-opacity=".67" stroke="#B4C4CB"/>
+<line x1="60" y1="278" x2="438" y2="278" stroke="#8AA0AA" stroke-width="1.5"/>
+<line x1="95" y1="302" x2="95" y2="72" stroke="#8AA0AA" stroke-width="1.5"/>
+<text x="442" y="282" font-size="11" fill="#617884">X</text><text x="88" y="66" font-size="11" fill="#617884">Z</text>
+<g stroke-linecap="round" stroke-linejoin="round">
+<line x1="156" y1="270" x2="156" y2="216" stroke="#263D49" stroke-width="18"/>
+<circle cx="156" cy="216" r="24" fill="#263D49" stroke="#8297A1" stroke-width="4"/>
+<line x1="156" y1="216" x2="263" y2="142" stroke="#334A57" stroke-width="20"/>
+<circle cx="263" cy="142" r="23" fill="#263D49" stroke="#8297A1" stroke-width="4"/>
+<line x1="263" y1="142" x2="365" y2="196" stroke="#334A57" stroke-width="20"/>
+<circle cx="365" cy="196" r="18" fill="#263D49" stroke="#8297A1" stroke-width="4"/>
+<line x1="365" y1="196" x2="404" y2="170" stroke="#445D69" stroke-width="11"/>
+</g>
+<circle cx="410" cy="165" r="8" fill="#B77E4B"/>
+<path d="M410 165C430 145 446 139 461 143" fill="none" stroke="#B77E4B" stroke-width="2.5" stroke-dasharray="5 5"/>
+<circle cx="461" cy="143" r="6" fill="#537F69"/>
+<path d="M156 216A54 54 0 0 1 196 177M263 142A48 48 0 0 1 305 161" fill="none" stroke="#6F90A8" stroke-width="2.2"/>
+<text x="205" y="174" font-size="12" font-weight="700" fill="#607582">q1</text><text x="302" y="151" font-size="12" font-weight="700" fill="#607582">q2</text>
+<text x="204" y="132" font-size="11.5" fill="#607582">L1</text><text x="315" y="159" font-size="11.5" fill="#607582">L2</text>
+<g transform="translate(55 307)">
+<rect width="116" height="27" rx="8" fill="#E8EFF2" stroke="#8CA3AE"/><text x="58" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#284252">TARGET x y z</text>
+<rect x="132" width="100" height="27" rx="8" fill="#E8EFF2" stroke="#8CA3AE"/><text x="182" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#284252">IK</text>
+<rect x="248" width="100" height="27" rx="8" fill="#E8EFF2" stroke="#8CA3AE"/><text x="298" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#284252">SERVO MAP</text>
+<rect x="364" width="80" height="27" rx="8" fill="#F2E7D9" stroke="#B78555"/><text x="404" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="#79593F">MEASURE</text>
+</g>
+</g>
+</g></svg>
