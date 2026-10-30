@@ -19,6 +19,7 @@
 
 <p align="center">
   <a href="docs/KINEMATICS.md"><strong>Kinematics</strong></a> ·
+  <a href="docs/FK_IK_WORKED_EXAMPLE.md"><strong>Worked FK/IK</strong></a> ·
   <a href="docs/CALIBRATION.md"><strong>Calibration</strong></a> ·
   <a href="docs/NUMERICAL_EVIDENCE.md"><strong>Numerical Evidence</strong></a> ·
   <a href="docs/PHYSICAL_VALIDATION.md"><strong>Physical Validation</strong></a> ·
@@ -248,6 +249,7 @@ It must not imply physical endpoint accuracy, repeatability, payload capability,
 ## Documentation
 
 * [Kinematics](docs/KINEMATICS.md)
+* [Worked FK/IK example](docs/FK_IK_WORKED_EXAMPLE.md)
 * [Calibration](docs/CALIBRATION.md)
 * [Serial Protocol](docs/SERIAL_PROTOCOL.md)
 * [Numerical Evidence](docs/NUMERICAL_EVIDENCE.md)
