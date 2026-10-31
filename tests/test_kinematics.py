@@ -16,3 +16,34 @@ def test_fk_ik_roundtrip():
 def test_unreachable_target():
     with pytest.raises(ValueError):
         inverse_kinematics(1000, 0, 0, ArmGeometry())
+
+
+@pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), float("-inf")])
+def test_arm_geometry_rejects_non_finite_values(bad_value):
+    for kwargs in (
+        {"l1": bad_value},
+        {"l2": bad_value},
+        {"base_height": bad_value},
+    ):
+        with pytest.raises(ValueError, match="finite"):
+            ArmGeometry(**kwargs)
+
+
+@pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), float("-inf")])
+def test_joint_angles_reject_non_finite_values(bad_value):
+    for angles in (
+        (bad_value, 0.0, 0.0),
+        (0.0, bad_value, 0.0),
+        (0.0, 0.0, bad_value),
+    ):
+        with pytest.raises(ValueError, match="finite"):
+            JointAngles(*angles)
+
+
+@pytest.mark.parametrize("bad_value", [float("nan"), float("inf"), float("-inf")])
+def test_inverse_kinematics_rejects_non_finite_target_coordinates(bad_value):
+    for index in range(3):
+        target = [10.0, 0.0, 100.0]
+        target[index] = bad_value
+        with pytest.raises(ValueError, match="finite"):
+            inverse_kinematics(*target, ArmGeometry())
