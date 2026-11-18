@@ -248,6 +248,7 @@ It must not imply physical endpoint accuracy, repeatability, payload capability,
 ## Documentation
 
 * [Kinematics](docs/KINEMATICS.md)
+* [Worked FK / IK Example](docs/WORKED_FK_IK_EXAMPLE.md)
 * [Calibration](docs/CALIBRATION.md)
 * [Serial Protocol](docs/SERIAL_PROTOCOL.md)
 * [Numerical Evidence](docs/NUMERICAL_EVIDENCE.md)
