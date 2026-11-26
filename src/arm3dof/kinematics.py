@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import atan2, cos, hypot, sin, sqrt
+from math import atan2, cos, hypot, isfinite, sin, sqrt
 
 
 @dataclass(frozen=True)
@@ -9,6 +9,8 @@ class ArmGeometry:
     base_height: float = 30.0
 
     def __post_init__(self):
+        if not all(isfinite(value) for value in (self.l1, self.l2, self.base_height)):
+            raise ValueError("arm geometry values must be finite")
         if self.l1 <= 0 or self.l2 <= 0:
             raise ValueError("link lengths must be positive")
 
@@ -18,6 +20,10 @@ class JointAngles:
     base: float
     shoulder: float
     elbow: float
+
+    def __post_init__(self):
+        if not all(isfinite(value) for value in (self.base, self.shoulder, self.elbow)):
+            raise ValueError("joint angles must be finite")
 
 
 def forward_kinematics(q: JointAngles, g: ArmGeometry) -> tuple[float, float, float]:
