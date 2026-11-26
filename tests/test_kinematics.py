@@ -38,3 +38,27 @@ def test_worked_fk_ik_example_matches_documented_values():
 def test_unreachable_target():
     with pytest.raises(ValueError):
         inverse_kinematics(1000, 0, 0, ArmGeometry())
+
+
+def test_geometry_rejects_non_finite_values():
+    import math
+
+    for kwargs in (
+        {"l1": math.nan},
+        {"l2": math.inf},
+        {"base_height": -math.inf},
+    ):
+        with pytest.raises(ValueError, match="must be finite"):
+            ArmGeometry(**kwargs)
+
+
+def test_joint_angles_reject_non_finite_values():
+    import math
+
+    for values in (
+        (math.nan, 0.0, 0.0),
+        (0.0, math.inf, 0.0),
+        (0.0, 0.0, -math.inf),
+    ):
+        with pytest.raises(ValueError, match="must be finite"):
+            JointAngles(*values)
